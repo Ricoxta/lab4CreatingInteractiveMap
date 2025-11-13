@@ -1,9 +1,9 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Interactive Web Mapping</title>
+    <title>Washington State Counties Covid Cases</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
@@ -46,16 +46,17 @@
 
         #features {
             top: 0;
-            height: 100px;
+            height: 120px;
             margin-top: 20px;
             width: 250px;
+
         }
 
         #legend {
             padding: 10px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             line-height: 18px;
-            height: 210px;
+            height: 180px;
             margin-bottom: 40px;
             width: 150px;
         }
@@ -78,9 +79,9 @@
 <body>
     <div id="map"></div>
     <div class='map-overlay' id='features'>
-        <h2>US population density</h2>
+        <h2>Covid Cases in Washington State</h2>
         <div id='text-description'>
-            <p>Hover over a state!</p>
+            <p>Hover over a county!</p>
         </div>
     </div>
     <div class='map-overlay' id='legend'></div>
@@ -90,19 +91,19 @@
         const map = new mapboxgl.Map({
                 container: 'map', // container ID
                 style: 'mapbox://styles/mapbox/light-v10', // style URL
-                zoom: 3, // starting zoom
-                center: [-100, 40] // starting center
+                zoom: 6.2, // starting zoom
+                center: [-121, 47] // starting center
             }
         );
 
         async function geojsonFetch() { 
          // other operations
-        let response = await fetch('assets/state_data.geojson');
+        let response = await fetch('assets/wa-covid-data-102521.geojson');
         let stateData = await response.json();
 
         map.on('load', function loadingData() {
             // add layer
-            map.addSource('stateData', {
+            map.addSource('covidData', {
             type: 'geojson',
             data: stateData
         });
@@ -110,66 +111,57 @@
         map.addLayer({
             'id': 'stateData-layer',
             'type': 'fill',
-            'source': 'stateData',
+            'source': 'covidData',
             'paint': {
                 'fill-color': [
                     'step',      // use step expression to provide fill color based on values
                     
-                    ['get', 'density'],  // get the density attribute from the data
+                    ['get', 'casePer10k'],  // get the density attribute from the data
+                          
+                    '#edb2d4',
+                    400,          // if cases < 400, use #edb2d4
                     
-                    '#FFEDA0',   // use color #FFEDA0
-                    10,          // if density < 10
+                    '#e84fa6',
+                    800,          // if 400 <= cases < 800
+                                        
+                    '#c33381',
+                    1200,         // if 800 <= cases < 1200
                     
-                    '#FED976',   // use color #FED976
-                    20,          // if 10 <= density < 20
-                    
-                    '#FEB24C',   // use color #FEB24C
-                    50,          // if 20 <= density < 50
-                    
-                    '#FD8D3C',   // use color #FD8D3C
-                    100,         // if 50 <= density < 100
-                    
-                    '#FC4E2A',   // use color #FC4E2A
-                    200,         // if 100 <= density < 200
-                    
-                    '#E31A1C',   // use color #E31A1C
-                    500,         // if 200 <= density < 500
-                    
-                    '#BD0026',   // use color #BD0026
-                    1000,        // if 500 <= density < 1000
-                    
-                    "#800026"    // use color #800026 if 1000 <= density
+                    '#9f386d',
+                    1600,         // if 1200 <= cases < 1599
+
+                    '#6D063B',
+                    2000,       // if 1600 <= cases < 1999
+                           
+                    "#40011C"    // if 1600 <= cases
                 ],
                 'fill-outline-color': '#BBBBBB',
-                'fill-opacity': 0.7,
+                'fill-opacity': 0.8,
             }
         });
 
             // add legend
 
+
             const layers = [
-                '0-9',
-                '10-19',
-                '20-49',
-                '50-99',
-                '100-199',
-                '200-499',
-                '500-999',
-                '1000 and more'
+                '0-399',
+                '400-799',
+                '800-1199',
+                '1200-1599',
+                '1600-1999',
+                '2000 and more'
             ];
             const colors = [
-                '#FFEDA070',
-                '#FED97670',
-                '#FEB24C70',
-                '#FD8D3C70',
-                '#FC4E2A70',
-                '#E31A1C70',
-                '#BD002670',
-                '#80002670'
+                '#edb2d4',
+                '#e84fa6',
+                '#c33381',
+                '#9f386d',
+                '#6D063B',
+                '#40011C'
             ];
 
             const legend = document.getElementById('legend');
-            legend.innerHTML = "<b>Population Density<br>(people/sq.mi.)</b><br><br>";
+            legend.innerHTML = "<b>Cases Within County (Per 10k)</b><br><br>";
 
             layers.forEach((layer, i) => {
                 const color = colors[i];
@@ -190,8 +182,8 @@
                     layers: ['stateData-layer']
                 });
                 document.getElementById('text-description').innerHTML = state.length ?
-                    `<h3>${state[0].properties.name}</h3><p><strong><em>${state[0].properties.density}</strong> people per square mile</em></p>` :
-                    `<p>Hover over a state!</p>`;
+                    `<h3>${state[0].properties.name} County</h3><p><strong><em>${state[0].properties.casePer10k}</strong> cases within this county</em></p>` :
+                    `<p>Hover over a county!</p>`;
             });
         });
 
@@ -203,4 +195,4 @@
 
 </body>
 
-</html> -->
+</html>
